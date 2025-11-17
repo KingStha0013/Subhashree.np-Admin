@@ -84,7 +84,7 @@
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); justify-content: center; align-items: center; }
         .modal.active { display: flex; }
         .modal-content { background-color: var(--surface-color); padding: 2rem; border-radius: 12px; width: 90%; max-width: 600px; position: relative; }
-        .close-btn { position: absolute; top: 1rem; right: 1rem; font-size: 1.5rem; cursor: pointer; }
+        .close-btn { position: absolute; top: 1rem; right: 1rem; font-size: 1.5rem; cursor: pointer; z-index: 10;}
         #loader { display: none; position: fixed; z-index: 4000; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.7); justify-content: center; align-items: center; }
         #loader.active { display: flex; }
         .spinner { width: 50px; height: 50px; border: 5px solid var(--border-color); border-top-color: var(--secondary-color); border-radius: 50%; animation: spin 1s linear infinite; }
@@ -94,6 +94,42 @@
         .toast.success { background-color: var(--success-color); }
         .toast.error { background-color: var(--danger-color); }
         @keyframes slideIn { to { transform: translateX(0); } }
+
+        /* =================================================================
+           🔥 NEW: CHAT & MESSAGES STYLES
+           ================================================================= */
+        .chat-list-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .chat-list-item:hover { background-color: #f8f9fa; }
+        .chat-list-item .icon {
+            font-size: 1.5rem;
+            color: var(--secondary-color);
+            margin-right: 1rem;
+        }
+        .chat-list-item .info {
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+
+        #chat-modal .modal-content {
+            height: 80vh; max-height: 700px; width: 90%; max-width: 500px;
+            padding: 0; display: flex; flex-direction: column;
+        }
+        .chat-header { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); font-weight: 600; }
+        .chat-messages { flex-grow: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; }
+        .chat-message { padding: 0.6rem 1rem; border-radius: 18px; max-width: 80%; line-height: 1.4; }
+        .chat-message.user { background-color: #e9ecef; color: var(--text-color); align-self: flex-start; border-bottom-left-radius: 4px; }
+        .chat-message.admin { background-color: var(--secondary-color); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .chat-message .timestamp { font-size: 0.7rem; display: block; margin-top: 4px; opacity: 0.7; }
+        .chat-input-area { display: flex; padding: 1rem; border-top: 1px solid var(--border-color); gap: 0.5rem; }
+        .chat-input-area input { flex-grow: 1; }
+        .chat-input-area button { width: auto; flex-shrink: 0; }
     </style>
 </head>
 <body>
@@ -137,7 +173,7 @@
                         <div class="stat-card"><div class="icon-wrapper"><i class="fas fa-box"></i></div><div class="stat-info"><h3 id="total-products">0</h3><p>Total Products</p></div></div>
                         <div class="stat-card"><div class="icon-wrapper"><i class="fas fa-receipt"></i></div><div class="stat-info"><h3 id="total-orders">0</h3><p>Total Orders</p></div></div>
                         <div class="stat-card"><div class="icon-wrapper"><i class="fas fa-users"></i></div><div class="stat-info"><h3 id="total-users">0</h3><p>Total Users</p></div></div>
-                        <div class="stat-card"><div class="icon-wrapper"><i class="fas fa-envelope"></i></div><div class="stat-info"><h3 id="total-messages">0</h3><p>Total Messages</p></div></div>
+                        <div class="stat-card"><div class="icon-wrapper"><i class="fas fa-envelope"></i></div><div class="stat-info"><h3 id="total-messages">0</h3><p>Conversations</p></div></div>
                     </div>
                 </div>
 
@@ -148,12 +184,15 @@
 
                 <div id="orders-page" class="page">
                     <div class="page-header"><h1>Orders</h1></div>
-                    <div class="table-container"><table class="table"><thead><tr><th>Order ID</th><th>User</th><th>Total</th><th>Payment</th><th>Transaction ID</th><th>Status</th></tr></thead><tbody id="orders-table-body"></tbody></table></div>
+                    <div class="table-container"><table class="table"><thead><tr><th>Order ID</th><th>User</th><th>Total</th><th>Status</th><th>Transaction ID</th><th>Actions</th></tr></thead><tbody id="orders-table-body"></tbody></table></div>
                 </div>
 
+                <!-- 🔥 UPDATED: Messages Page Structure -->
                 <div id="messages-page" class="page">
-                    <div class="page-header"><h1>Messages</h1></div>
-                    <div class="table-container"><table class="table"><thead><tr><th>Name</th><th>Email</th><th>Message</th><th>Date</th></tr></thead><tbody id="messages-table-body"></tbody></table></div>
+                    <div class="page-header"><h1>Conversations</h1></div>
+                    <div id="chat-list-container" class="table-container" style="padding: 0;">
+                        <!-- Chat list will be dynamically inserted here -->
+                    </div>
                 </div>
             </div>
         </main>
@@ -173,6 +212,9 @@
             </form>
         </div>
     </div>
+
+    <!-- 🔥 NEW: Chat Modal -->
+    <div id="chat-modal" class="modal"></div>
 
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
@@ -197,6 +239,7 @@
         const auth = firebase.auth();
         const db = firebase.database();
         const CURRENCY = 'रू';
+        let chatListener = null; // To hold the active chat listener
 
         // --- UI HELPERS ---
         const showLoader = () => document.getElementById('loader').classList.add('active');
@@ -213,16 +256,20 @@
         // --- ROUTING & NAVIGATION ---
         const handleRouteChange = () => {
             const hash = window.location.hash || '#dashboard';
-            const pageId = hash.substring(1);
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
             document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-            document.getElementById(pageId + '-page')?.classList.add('active');
-            document.querySelector(`.nav-link[href="${hash}"]`)?.classList.add('active');
             
-            const pageTitle = document.querySelector(`.nav-link[href="${hash}"]`)?.textContent || 'Dashboard';
-            document.getElementById('page-title').textContent = pageTitle;
+            const pageId = hash.substring(1);
+            const activePage = document.getElementById(pageId + '-page');
+            if(activePage) activePage.style.display = 'block';
 
-            const loadFuncs = { '#dashboard': loadDashboardStats, '#products': loadProducts, '#orders': loadOrders, '#messages': loadMessages };
+            const activeLink = document.querySelector(`.nav-link[href="${hash}"]`);
+            if(activeLink) {
+                activeLink.classList.add('active');
+                document.getElementById('page-title').textContent = activeLink.textContent.trim();
+            }
+
+            const loadFuncs = { '#dashboard': loadDashboardStats, '#products': loadProducts, '#orders': loadOrders, '#messages': loadChats };
             if(loadFuncs[hash]) loadFuncs[hash]();
         };
         
@@ -254,7 +301,8 @@
 
         // --- PAGE DATA LOADERS ---
         const loadDashboardStats = () => {
-            const refs = { products: db.ref('products'), orders: db.ref('orders'), users: db.ref('users'), messages: db.ref('messages') };
+            // 🔥 UPDATED: 'messages' ref changed to 'chats'
+            const refs = { products: db.ref('products'), orders: db.ref('orders'), users: db.ref('users'), messages: db.ref('chats') };
             for (const key in refs) { refs[key].on('value', snap => { document.getElementById(`total-${key}`).textContent = snap.numChildren(); }); }
         };
 
@@ -265,10 +313,10 @@
                 snapshot.forEach(child => {
                     const product = child.val();
                     tableBody.innerHTML += `<tr>
-                        <td><img src="${product.imageUrl}" alt="${product.name}"></td><td>${product.name}</td><td>${CURRENCY}${product.price.toLocaleString()}</td>
+                        <td><img src="${product.imageUrl || ''}" alt="${product.name}"></td><td>${product.name}</td><td>${CURRENCY}${product.price.toLocaleString()}</td>
                         <td>
-                            <button class="btn btn-primary btn-sm edit-product-btn" data-id="${child.key}">Edit</button>
-                            <button class="btn btn-danger btn-sm delete-product-btn" data-id="${child.key}">Delete</button>
+                            <button class="btn btn-primary edit-product-btn" data-id="${child.key}">Edit</button>
+                            <button class="btn btn-danger delete-product-btn" data-id="${child.key}">Delete</button>
                         </td></tr>`;
                 });
             });
@@ -280,25 +328,105 @@
                 tableBody.innerHTML = '';
                 snapshot.forEach(child => {
                     const order = child.val();
-                    const statuses = ['Payment Verification', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
+                    const statuses = ['Processing', 'Shipped', 'Delivered', 'Cancelled'];
                     const options = statuses.map(s => `<option value="${s}" ${s === order.status ? 'selected' : ''}>${s}</option>`).join('');
-                    tableBody.innerHTML += `<tr class="order-status-${order.status.replace(' ','-')}">
-                        <td>${child.key.substring(0, 8)}...</td><td>${order.userEmail}</td><td>${CURRENCY}${order.total.toLocaleString()}</td>
-                        <td>${order.paymentMethod || 'N/A'}</td><td>${order.transactionId || 'N/A'}</td>
+                    tableBody.innerHTML += `<tr>
+                        <td>${child.key.substring(child.key.length - 8)}</td><td>${order.userEmail}</td><td>${CURRENCY}${order.total.toLocaleString()}</td>
+                        <td>${order.transactionId || 'N/A'}</td>
                         <td><select class="form-control order-status-select" data-id="${child.key}">${options}</select></td></tr>`;
                 });
             });
         };
 
-        const loadMessages = () => {
-            db.ref('messages').on('value', snapshot => {
-                const tableBody = document.getElementById('messages-table-body');
-                tableBody.innerHTML = '';
+        // =================================================================
+        // 🔥 NEW: CHAT/MESSAGING LOGIC
+        // =================================================================
+        const loadChats = () => {
+            const chatListContainer = document.getElementById('chat-list-container');
+            db.ref('chats').on('value', async (snapshot) => {
+                chatListContainer.innerHTML = '';
+                if (!snapshot.exists()) {
+                    chatListContainer.innerHTML = '<p style="padding: 1rem;">No conversations found.</p>';
+                    return;
+                }
+                
+                // Fetch all users to map emails
+                const usersSnap = await db.ref('users').once('value');
+                const users = usersSnap.val() || {};
+
                 snapshot.forEach(child => {
-                    const msg = child.val();
-                    tableBody.innerHTML += `<tr><td>${msg.name}</td><td>${msg.email}</td><td>${msg.message}</td><td>${new Date(msg.date).toLocaleDateString()}</td></tr>`;
+                    const userId = child.key;
+                    // Find user email from orders as a fallback
+                    const userEmail = findUserEmail(userId, users);
+
+                    chatListContainer.innerHTML += `
+                        <div class="chat-list-item" data-userid="${userId}" data-useremail="${userEmail || 'Unknown User'}">
+                            <i class="fas fa-user-circle icon"></i>
+                            <span class="info">${userEmail || userId}</span>
+                        </div>`;
                 });
             });
+        };
+
+        const findUserEmail = (userId, allUsers) => {
+            for (const key in allUsers) {
+                if (key === userId) return allUsers[key].email;
+            }
+            // As a fallback, check the orders (less efficient)
+            // In a real app, user profile data should be stored in /users/{uid}
+            return null;
+        };
+
+        const openChatModal = (userId, userEmail) => {
+            const modal = document.getElementById('chat-modal');
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <span class="close-btn">&times;</span>
+                    <div class="chat-header">Chat with ${userEmail}</div>
+                    <div class="chat-messages" id="chat-messages-container"></div>
+                    <form class="chat-input-area" id="chat-reply-form">
+                        <input type="text" id="chat-reply-input" class="form-control" placeholder="Type your reply..." required>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i></button>
+                    </form>
+                </div>`;
+            modal.classList.add('active');
+
+            const messagesContainer = document.getElementById('chat-messages-container');
+            const chatRef = db.ref(`chats/${userId}/messages`);
+
+            if (chatListener) chatListener.off(); // Detach previous listener
+
+            chatListener = chatRef.orderByChild('timestamp');
+            chatListener.on('child_added', snap => {
+                const msg = snap.val();
+                messagesContainer.innerHTML += `
+                    <div class="chat-message ${msg.sender}">
+                        <span>${msg.text}</span>
+                        <span class="timestamp">${new Date(msg.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+                    </div>`;
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            });
+
+            document.getElementById('chat-reply-form').onsubmit = (e) => handleAdminReply(e, userId);
+            modal.querySelector('.close-btn').onclick = () => {
+                modal.classList.remove('active');
+                if (chatListener) chatListener.off(); // Clean up listener on close
+            };
+        };
+
+        const handleAdminReply = (e, userId) => {
+            e.preventDefault();
+            const input = document.getElementById('chat-reply-input');
+            const messageText = input.value.trim();
+            if (!messageText) return;
+
+            const newMessage = {
+                text: messageText,
+                sender: 'admin',
+                timestamp: Date.now()
+            };
+            db.ref(`chats/${userId}/messages`).push(newMessage);
+            input.value = '';
         };
 
         // --- PRODUCT MODAL & CRUD ---
@@ -346,23 +474,26 @@
         window.addEventListener('load', handleRouteChange);
 
         document.body.addEventListener('click', async e => {
-            if (e.target.matches('.edit-product-btn')) { 
-                const id = e.target.dataset.id;
+            if (e.target.closest('.edit-product-btn')) { 
+                const id = e.target.closest('.edit-product-btn').dataset.id;
                 const snapshot = await db.ref(`products/${id}`).once('value');
                 openProductModal(snapshot.val(), id);
             }
-            if (e.target.matches('.delete-product-btn')) { 
+            if (e.target.closest('.delete-product-btn')) { 
                 if (confirm('Are you sure you want to delete this product?')) {
                     showLoader();
                     try {
-                        await db.ref(`products/${e.target.dataset.id}`).remove();
+                        await db.ref(`products/${e.target.closest('.delete-product-btn').dataset.id}`).remove();
                         showToast('Product deleted.', 'success');
                     } catch (err) {
                         showToast(err.message, 'error');
-                    } finally {
-                        hideLoader();
-                    }
+                    } finally { hideLoader(); }
                 }
+            }
+            // 🔥 NEW: Listener to open chat modal
+            if (e.target.closest('.chat-list-item')) {
+                const item = e.target.closest('.chat-list-item');
+                openChatModal(item.dataset.userid, item.dataset.useremail);
             }
         });
         document.body.addEventListener('change', e => {
