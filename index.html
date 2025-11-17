@@ -206,7 +206,10 @@
                 <input type="hidden" id="product-id">
                 <input type="text" id="product-name" class="form-control" placeholder="Product Name" required>
                 <input type="number" id="product-price" class="form-control" placeholder="Price (NPR)" step="0.01" required>
-                <input type="url" id="product-image" class="form-control" placeholder="Image URL" required>
+                <input type="url" id="product-image" class="form-control" placeholder="Main Image URL" required>
+                <input type="url" id="product-image-2" class="form-control" placeholder="Additional Image URL 2">
+                <input type="url" id="product-image-3" class="form-control" placeholder="Additional Image URL 3">
+                <input type="url" id="product-image-4" class="form-control" placeholder="Additional Image URL 4">
                 <textarea id="product-desc" class="form-control" rows="4" placeholder="Description" required></textarea>
                 <button type="submit" class="btn btn-primary">Save Product</button>
             </form>
@@ -439,6 +442,9 @@
                 document.getElementById('product-name').value = product.name;
                 document.getElementById('product-price').value = product.price;
                 document.getElementById('product-image').value = product.imageUrl;
+                document.getElementById('product-image-2').value = product.imageUrl2 || '';
+                document.getElementById('product-image-3').value = product.imageUrl3 || '';
+                document.getElementById('product-image-4').value = product.imageUrl4 || '';
                 document.getElementById('product-desc').value = product.description;
             } else {
                 document.getElementById('modal-title').textContent = 'Add Product';
@@ -455,6 +461,9 @@
                 name: document.getElementById('product-name').value,
                 price: parseFloat(document.getElementById('product-price').value),
                 imageUrl: document.getElementById('product-image').value,
+                imageUrl2: document.getElementById('product-image-2').value,
+                imageUrl3: document.getElementById('product-image-3').value,
+                imageUrl4: document.getElementById('product-image-4').value,
                 description: document.getElementById('product-desc').value
             };
             try {
