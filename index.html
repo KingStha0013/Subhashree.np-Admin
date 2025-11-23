@@ -3,7 +3,7 @@
 <head>
    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - ShopNepal</title>
+    <title>Admin Panel - SubhaShop</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,6 +23,7 @@
             --shadow: 0 4px 12px rgba(0,0,0,0.08);
             --success-color: #2ecc71;
             --danger-color: #e74c3c;
+            --gold-color: #f1c40f;
         }
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -87,11 +88,100 @@
             border: 1px solid #d2e3fc;
         }
 
+        /* --- NEW USER CARD STYLES --- */
+        .user-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            padding-bottom: 2rem;
+        }
+
+        .user-card {
+            background: var(--surface-color);
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .user-card:hover { transform: translateY(-5px); box-shadow: 0 12px 30px rgba(0,0,0,0.12); }
+
+        /* Starred User Style */
+        .user-card.is-starred {
+            border-color: var(--gold-color);
+            background: linear-gradient(to bottom right, #ffffff, #fffdf2);
+        }
+
+        .user-avatar {
+            width: 70px;
+            height: 70px;
+            background: #e8f0fe;
+            color: var(--secondary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .crown-icon {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: white;
+            color: var(--gold-color);
+            border-radius: 50%;
+            padding: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            font-size: 1rem;
+            display: none;
+        }
+        .user-card.is-starred .crown-icon { display: block; }
+
+        .user-email { font-weight: 600; color: var(--text-color); margin-bottom: 0.5rem; word-break: break-all; }
+        .user-id { font-size: 0.75rem; color: #95a5a6; background: #f8f9fa; padding: 3px 8px; border-radius: 12px; margin-bottom: 1rem; }
+
+        /* Star Button */
+        .star-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #dfe6e9; /* Light grey when inactive */
+            transition: transform 0.2s, color 0.2s;
+            margin-top: auto;
+            padding: 10px;
+        }
+        
+        .star-btn:hover { transform: scale(1.2); color: #bdc3c7; }
+        .star-btn.active { color: var(--gold-color); animation: starPop 0.4s ease-in-out; }
+
+        @keyframes starPop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.6) rotate(15deg); }
+            100% { transform: scale(1); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* --------------------------- */
+
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
         .btn { padding: 0.6rem 1.2rem; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.3s; }
         .btn-primary { background-color: var(--secondary-color); color: white; }
         .btn-danger { background-color: var(--danger-color); color: white; }
-        .btn-chat { background-color: #2ecc71; color: white; padding: 0.4rem 0.8rem; font-size: 0.85rem; margin-top: 0.5rem; display: inline-flex; align-items: center; gap: 5px;}
+        .btn-chat { background-color: #2ecc71; color: white; padding: 0.4rem 0.8rem; font-size: 0.85rem; margin-top: 0.5rem; display: inline-flex; align-items: center; justify-content: center; gap: 5px;}
         
         .form-control { width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; }
         
@@ -146,7 +236,8 @@
                 <li><a href="#dashboard" class="nav-link active"><i class="fas fa-tachometer-alt fa-fw"></i> Dashboard</a></li>
                 <li><a href="#products" class="nav-link"><i class="fas fa-box-open fa-fw"></i> Products</a></li>
                 <li><a href="#orders" class="nav-link"><i class="fas fa-receipt fa-fw"></i> Orders</a></li>
-                <!-- 🔥 NEW: Wishlist Link -->
+                <!-- 🔥 NEW: Users Link -->
+                <li><a href="#users" class="nav-link"><i class="fas fa-users fa-fw"></i> Customers</a></li>
                 <li><a href="#wishlists" class="nav-link"><i class="fas fa-heart fa-fw"></i> Wishlists</a></li>
                 <li><a href="#messages" class="nav-link"><i class="fas fa-envelope fa-fw"></i> Messages</a></li>
             </ul>
@@ -182,17 +273,28 @@
                                 <tr>
                                     <th>Order ID</th>
                                     <th>Customer</th>
-                                    <th>Delivery Details / Products</th>
+                                    <th>Details</th>
                                     <th>Total</th>
-                                    <th>Status/Action</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody id="orders-table-body"></tbody>
                         </table>
                     </div>
                 </div>
+                
+                <!-- 🔥 NEW: Users / Customers Page -->
+                <div id="users-page" class="page">
+                    <div class="page-header">
+                        <h1>Registered Customers</h1>
+                        <input type="text" id="user-search" class="form-control" style="max-width: 300px;" placeholder="Search email...">
+                    </div>
+                    
+                    <div id="users-grid-container" class="user-grid">
+                        <!-- User Cards will be injected here via JS -->
+                    </div>
+                </div>
 
-                <!-- 🔥 NEW: Wishlists Page -->
                 <div id="wishlists-page" class="page">
                     <div class="page-header"><h1>User Wishlists</h1></div>
                     <div class="table-container">
@@ -204,9 +306,7 @@
                                     <th>Action</th>
                                 </tr>
                             </thead>
-                            <tbody id="wishlist-table-body">
-                                <!-- Wishlist items loaded here -->
-                            </tbody>
+                            <tbody id="wishlist-table-body"></tbody>
                         </table>
                     </div>
                 </div>
@@ -245,15 +345,14 @@
     
     <script type="module">
         const firebaseConfig = {
-          apiKey: "AIzaSyDejfoaQpaNJ-XDpVopn1nEDl-RWseEBiQ",
-          authDomain: "e-commerce-app-e1d9e.firebaseapp.com",
-          databaseURL: "https://e-commerce-app-e1d9e-default-rtdb.firebaseio.com",
-          projectId: "e-commerce-app-e1d9e",
-          storageBucket: "e-commerce-app-e1d9e.firebasestorage.app",
-          messagingSenderId: "203220920862",
-          appId: "1:203220920862:web:3cfdf5bf300c119dfc5c0f",
-          measurementId: "G-D43W7XSYQR"
-        };
+  apiKey: "AIzaSyAKq38PbC6oFRHnyaDSJ1yOWRMZz9wW5tE",
+  authDomain: "subhashree-97568.firebaseapp.com",
+  databaseURL: "https://subhashree-97568-default-rtdb.firebaseio.com",
+  projectId: "subhashree-97568",
+  storageBucket: "subhashree-97568.firebasestorage.app",
+  messagingSenderId: "781266473492",
+  appId: "1:781266473492:web:48c1dc483c0a5b5f5b0d01"
+};
         
         const app = firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
@@ -287,13 +386,13 @@
                 document.getElementById('page-title').textContent = activeLink.textContent.trim();
             }
 
-            // 🔥 Added #wishlists to routing
             const loadFuncs = { 
                 '#dashboard': loadDashboardStats, 
                 '#products': loadProducts, 
                 '#orders': loadOrders, 
                 '#wishlists': loadAllWishlists,
-                '#messages': loadChats 
+                '#messages': loadChats,
+                '#users': loadUsers // 🔥 New function
             };
             if(loadFuncs[hash]) loadFuncs[hash]();
         };
@@ -354,155 +453,167 @@
                     const statuses = ['Processing', 'Shipped', 'Delivered', 'Cancelled'];
                     const options = statuses.map(s => `<option value="${s}" ${s === order.status ? 'selected' : ''}>${s}</option>`).join('');
                     const noteHtml = order.message ? `<div class="order-note">" ${order.message} "</div>` : '';
-
-                    const itemsHtml = (order.items || []).map(item => 
-                        `<div>• <strong>${item.quantity}x</strong> ${item.name}</div>`
-                    ).join('');
+                    const itemsHtml = (order.items || []).map(item => `<div>• <strong>${item.quantity}x</strong> ${item.name}</div>`).join('');
 
                     tableBody.innerHTML += `<tr>
                         <td>${order.key.substring(order.key.length - 8)}<br><small>${new Date(order.date).toLocaleDateString()}</small></td>
-                        <td>
-                            ${order.userEmail}<br>
-                            <small style="color:#777;">UID: ${order.userId ? order.userId.substring(0,6) : 'Guest'}</small>
-                        </td>
+                        <td>${order.userEmail}<br><small style="color:#777;">UID: ${order.userId ? order.userId.substring(0,6) : 'Guest'}</small></td>
                         <td class="order-details-cell">
                             <strong><i class="fas fa-map-marker-alt"></i> Addr:</strong> ${order.address || 'N/A'}<br>
                             <strong><i class="fas fa-phone"></i> Ph:</strong> ${order.phone || 'N/A'}<br>
-                            <strong><i class="fas fa-receipt"></i> Txn:</strong> ${order.transactionId || 'N/A'}
-                            
-                            <div class="product-list-small">
-                                <span style="color:#5E5DF0; font-weight:600;">Items Ordered:</span>
-                                ${itemsHtml}
-                            </div>
-
+                            <div class="product-list-small"><span style="color:#5E5DF0; font-weight:600;">Items Ordered:</span>${itemsHtml}</div>
                             ${noteHtml}
                         </td>
                         <td>${CURRENCY}${(order.total || 0).toLocaleString()}</td>
                         <td>
                             <select class="form-control order-status-select" data-id="${order.key}" style="margin-bottom:5px;">${options}</select>
-                            <button class="btn btn-chat open-chat-direct" data-userid="${order.userId}" data-email="${order.userEmail}">
-                                <i class="fas fa-comments"></i> Chat with User
-                            </button>
+                            <button class="btn btn-chat open-chat-direct" data-userid="${order.userId}" data-email="${order.userEmail}"><i class="fas fa-comments"></i> Chat</button>
                         </td></tr>`;
                 });
             });
         };
 
-        // 🔥 NEW: Load Wishlists Function
         const loadAllWishlists = async () => {
             const tableBody = document.getElementById('wishlist-table-body');
             tableBody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Loading wishlists...</td></tr>';
-
-            // 1. Fetch all users
             const usersSnap = await db.ref('users').once('value');
-            if(!usersSnap.exists()) {
-                tableBody.innerHTML = '<tr><td colspan="3" style="text-align:center;">No users found.</td></tr>';
-                return;
-            }
-
-            tableBody.innerHTML = ''; // Clear loading message
+            if(!usersSnap.exists()) { tableBody.innerHTML = '<tr><td colspan="3" style="text-align:center;">No users found.</td></tr>'; return; }
+            
+            tableBody.innerHTML = ''; 
             let hasData = false;
-
-            // 2. Iterate through each user to check 'wishlist' node
             usersSnap.forEach(userSnap => {
                 const userData = userSnap.val();
-                const userId = userSnap.key;
                 const wishlist = userData.wishlist || [];
-
-                // 3. If user has items in wishlist, display them
                 if (wishlist.length > 0) {
                     hasData = true;
-                    
-                    // Fallback if email isn't stored directly in user node (often stored in Auth, but good to save in DB too)
-                    // We will try to find email from orders if missing in user node, or just show ID
-                    let displayIdentifier = userData.email || `User ID: ${userId}`;
-
-                    // Create HTML tags for products
-                    const productsHtml = wishlist.map(p => 
-                        `<span class="wishlist-item-tag"><i class="fas fa-tag"></i> ${p.name}</span>`
-                    ).join('');
-
-                    tableBody.innerHTML += `
-                        <tr>
-                            <td>
-                                <strong>${displayIdentifier}</strong>
-                            </td>
-                            <td>
-                                ${productsHtml}
-                            </td>
-                            <td>
-                                <button class="btn btn-chat open-chat-direct" data-userid="${userId}" data-email="${displayIdentifier}">
-                                    <i class="fas fa-comments"></i> Chat
-                                </button>
-                            </td>
-                        </tr>
-                    `;
+                    const displayIdentifier = userData.email || `User ID: ${userSnap.key}`;
+                    const productsHtml = wishlist.map(p => `<span class="wishlist-item-tag"><i class="fas fa-tag"></i> ${p.name}</span>`).join('');
+                    tableBody.innerHTML += `<tr>
+                        <td><strong>${displayIdentifier}</strong></td>
+                        <td>${productsHtml}</td>
+                        <td><button class="btn btn-chat open-chat-direct" data-userid="${userSnap.key}" data-email="${displayIdentifier}"><i class="fas fa-comments"></i> Chat</button></td>
+                    </tr>`;
                 }
             });
-
-            if (!hasData) {
-                tableBody.innerHTML = '<tr><td colspan="3" style="text-align:center;">No active wishlists found.</td></tr>';
-            }
+            if (!hasData) tableBody.innerHTML = '<tr><td colspan="3" style="text-align:center;">No active wishlists found.</td></tr>';
         };
+
+        // 🔥 NEW: Updated Logic to Find Missing Emails and Save Them
+        const loadUsers = () => {
+            const container = document.getElementById('users-grid-container');
+            const searchVal = document.getElementById('user-search').value.toLowerCase();
+
+            // 1. We listen to users
+            db.ref('users').on('value', async (usersSnapshot) => {
+                container.innerHTML = '';
+                if (!usersSnapshot.exists()) { container.innerHTML = '<p style="text-align:center; padding: 20px;">No users found.</p>'; return; }
+
+                // 2. We ALSO fetch orders once to build a "Cheat Sheet" of emails
+                const ordersSnapshot = await db.ref('orders').once('value');
+                const emailLookup = {};
+                
+                ordersSnapshot.forEach(orderChild => {
+                    const order = orderChild.val();
+                    if(order.userId && order.userEmail) {
+                        emailLookup[order.userId] = order.userEmail;
+                    }
+                });
+
+                let usersArr = [];
+                usersSnapshot.forEach(child => {
+                    const data = child.val();
+                    const userId = child.key;
+                    
+                    // Priority 1: Check User Node
+                    // Priority 2: Check Order History (Lookup)
+                    // Priority 3: Show "Guest / No Email"
+                    let email = data.email;
+                    
+                    if (!email || email === 'No Email') {
+                        email = emailLookup[userId] || 'Guest / No Email Found';
+                        
+                        // 🔥 FIX: If found in lookup but not in user profile, SAVE IT PERMANENTLY
+                        if (emailLookup[userId]) {
+                            db.ref(`users/${userId}`).update({ email: emailLookup[userId] });
+                        }
+                    }
+
+                    if(email && email.toLowerCase().includes(searchVal)){
+                        usersArr.push({ key: userId, email: email, starred: data.starred || false });
+                    } else if (!email && searchVal === '') {
+                        usersArr.push({ key: userId, email: emailLookup[userId] || 'Guest / No Email Found', starred: data.starred || false });
+                    }
+                });
+
+                // SORTING: Starred users go to top
+                usersArr.sort((a, b) => (b.starred === true ? 1 : 0) - (a.starred === true ? 1 : 0));
+
+                usersArr.forEach(user => {
+                    const starClass = user.starred ? 'active' : '';
+                    const cardClass = user.starred ? 'is-starred' : '';
+                    const starIcon = 'fa-star'; 
+                    const isGuest = user.email.includes('Guest');
+                    const emailStyle = isGuest ? 'color: #95a5a6; font-style: italic;' : '';
+
+                    container.innerHTML += `
+                        <div class="user-card ${cardClass}" id="card-${user.key}">
+                            <div class="user-avatar">
+                                <i class="fas fa-user"></i>
+                                <i class="fas fa-crown crown-icon"></i>
+                            </div>
+                            <div class="user-email" style="${emailStyle}">${user.email}</div>
+                            <div class="user-id">ID: ${user.key.substring(0,8)}...</div>
+                            
+                            <button class="star-btn ${starClass} toggle-star-btn" data-id="${user.key}" data-starred="${user.starred}">
+                                <i class="fas ${starIcon}"></i>
+                            </button>
+                            
+                            <button class="btn btn-chat open-chat-direct" data-userid="${user.key}" data-email="${user.email}" style="margin-top:10px; width:100%;">
+                                Message
+                            </button>
+                        </div>
+                    `;
+                });
+            });
+        };
+
+        // Add listener for search
+        document.getElementById('user-search').addEventListener('input', loadUsers);
 
         const loadChats = () => {
             const chatListContainer = document.getElementById('chat-list-container');
             db.ref('chats').on('value', async (snapshot) => {
                 chatListContainer.innerHTML = '';
-                if (!snapshot.exists()) {
-                    chatListContainer.innerHTML = '<p style="padding: 1rem;">No conversations found.</p>';
-                    return;
-                }
+                if (!snapshot.exists()) { chatListContainer.innerHTML = '<p style="padding: 1rem;">No conversations found.</p>'; return; }
                 snapshot.forEach(child => {
-                    const userId = child.key;
-                    chatListContainer.innerHTML += `
-                        <div class="chat-list-item" data-userid="${userId}" data-useremail="User ID: ${userId}">
-                            <i class="fas fa-user-circle icon"></i>
-                            <span class="info">Chat with User (${userId.substring(0,6)}...)</span>
-                        </div>`;
+                    chatListContainer.innerHTML += `<div class="chat-list-item" data-userid="${child.key}" data-useremail="User ID: ${child.key}">
+                        <i class="fas fa-user-circle icon"></i> <span class="info">Chat with User (${child.key.substring(0,6)}...)</span>
+                    </div>`;
                 });
             });
         };
 
         const openChatModal = (userId, userEmail) => {
-            if(!userId || userId === 'guest') {
-                showToast('Cannot chat with guest users.', 'error');
-                return;
-            }
+            if(!userId || userId === 'guest') { showToast('Cannot chat with guest users.', 'error'); return; }
             const modal = document.getElementById('chat-modal');
             modal.innerHTML = `
                 <div class="modal-content">
-                    <span class="close-btn">&times;</span>
-                    <div class="chat-header">Chat with ${userEmail}</div>
+                    <span class="close-btn">&times;</span><div class="chat-header">Chat with ${userEmail}</div>
                     <div class="chat-messages" id="chat-messages-container"></div>
-                    <form class="chat-input-area" id="chat-reply-form">
-                        <input type="text" id="chat-reply-input" class="form-control" placeholder="Type your reply..." required>
-                        <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i></button>
-                    </form>
+                    <form class="chat-input-area" id="chat-reply-form"><input type="text" id="chat-reply-input" class="form-control" placeholder="Type your reply..." required><button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i></button></form>
                 </div>`;
             modal.classList.add('active');
-
             const messagesContainer = document.getElementById('chat-messages-container');
             const chatRef = db.ref(`chats/${userId}/messages`);
-
             if (chatListener) chatListener.off();
-
             chatListener = chatRef.orderByChild('timestamp');
             chatListener.on('child_added', snap => {
                 const msg = snap.val();
-                messagesContainer.innerHTML += `
-                    <div class="chat-message ${msg.sender}">
-                        <span>${msg.text}</span>
-                        <span class="timestamp">${new Date(msg.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
-                    </div>`;
+                messagesContainer.innerHTML += `<div class="chat-message ${msg.sender}"><span>${msg.text}</span><span class="timestamp">${new Date(msg.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span></div>`;
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
             });
-
             document.getElementById('chat-reply-form').onsubmit = (e) => handleAdminReply(e, userId);
-            modal.querySelector('.close-btn').onclick = () => {
-                modal.classList.remove('active');
-                if (chatListener) chatListener.off();
-            };
+            modal.querySelector('.close-btn').onclick = () => { modal.classList.remove('active'); if (chatListener) chatListener.off(); };
         };
 
         const handleAdminReply = (e, userId) => {
@@ -510,15 +621,13 @@
             const input = document.getElementById('chat-reply-input');
             const messageText = input.value.trim();
             if (!messageText) return;
-
-            const newMessage = { text: messageText, sender: 'admin', timestamp: Date.now() };
-            db.ref(`chats/${userId}/messages`).push(newMessage);
+            db.ref(`chats/${userId}/messages`).push({ text: messageText, sender: 'admin', timestamp: Date.now() });
             input.value = '';
         };
 
         const productModal = document.getElementById('product-modal');
         const openProductModal = (product = null, id = null) => {
-            const form = document.getElementById('product-form'); form.reset();
+            document.getElementById('product-form').reset();
             document.getElementById('product-id').value = id || '';
             if(product) {
                 document.getElementById('modal-title').textContent = 'Edit Product';
@@ -529,12 +638,9 @@
                 document.getElementById('product-image-3').value = product.imageUrl3 || '';
                 document.getElementById('product-image-4').value = product.imageUrl4 || '';
                 document.getElementById('product-desc').value = product.description;
-            } else {
-                document.getElementById('modal-title').textContent = 'Add Product';
-            }
+            } else { document.getElementById('modal-title').textContent = 'Add Product'; }
             productModal.classList.add('active');
         };
-        
         document.getElementById('add-product-btn').onclick = () => openProductModal();
         productModal.querySelector('.close-btn').onclick = () => productModal.classList.remove('active');
         
@@ -551,13 +657,10 @@
                 description: document.getElementById('product-desc').value
             };
             try {
-                const promise = id ? db.ref(`products/${id}`).update(productData) : db.ref('products').push(productData);
-                await promise;
+                await (id ? db.ref(`products/${id}`).update(productData) : db.ref('products').push(productData));
                 productModal.classList.remove('active');
                 showToast(`Product ${id ? 'updated' : 'added'} successfully!`);
-            } catch (err) {
-                showToast(err.message, 'error');
-            } finally { hideLoader(); }
+            } catch (err) { showToast(err.message, 'error'); } finally { hideLoader(); }
         };
         
         window.addEventListener('hashchange', handleRouteChange);
@@ -584,25 +687,48 @@
                 const item = e.target.closest('.chat-list-item');
                 openChatModal(item.dataset.userid, item.dataset.useremail);
             }
+            
+            // 🔥 NEW: Handle Star Click Logic
+            if (e.target.closest('.toggle-star-btn')) {
+                const btn = e.target.closest('.toggle-star-btn');
+                const userId = btn.dataset.id;
+                const currentStatus = btn.dataset.starred === 'true';
+                
+                // Visual feedback immediate
+                if (!currentStatus) btn.classList.add('active'); 
+                else btn.classList.remove('active');
+
+                // Update Database
+                try {
+                    await db.ref(`users/${userId}`).update({ starred: !currentStatus });
+                    // No need to reload, the .on('value') listener will auto-refresh and sort the list
+                } catch (error) {
+                    console.error("Error updating star:", error);
+                    showToast("Failed to update status", "error");
+                }
+            }
         });
 
         document.body.addEventListener('change', e => {
             if(e.target.matches('.order-status-select')) { 
                 const orderId = e.target.dataset.id;
                 const newStatus = e.target.value;
-
                 if (newStatus === 'Delivered') {
-                    if (confirm('Are you sure you want to mark this as Delivered? \n\n⚠️ This will permanently DELETE the order from the list.')) {
-                        db.ref(`orders/${orderId}`).remove()
-                            .then(() => showToast('Order Delivered & Removed from list.', 'success'))
-                            .catch(err => showToast(err.message, 'error'));
-                    } else {
-                        loadOrders();
-                    }
-                } else {
-                    db.ref(`orders/${orderId}`).update({ status: newStatus })
-                        .then(() => showToast('Order status updated.', 'success'))
+                    if (confirm('Mark as Delivered and Remove from list?')) {
+                        // 🔥 FIX: SAVE EMAIL TO USER PROFILE BEFORE DELETING ORDER
+                        db.ref(`orders/${orderId}`).once('value').then(snapshot => {
+                            const order = snapshot.val();
+                            if(order && order.userId && order.userEmail && order.userId !== 'guest') {
+                                db.ref(`users/${order.userId}`).update({ email: order.userEmail });
+                            }
+                            // Now delete the order
+                            return db.ref(`orders/${orderId}`).remove();
+                        })
+                        .then(() => showToast('Order Delivered & User Email Saved.', 'success'))
                         .catch(err => showToast(err.message, 'error'));
+                    } else { loadOrders(); }
+                } else {
+                    db.ref(`orders/${orderId}`).update({ status: newStatus }).then(() => showToast('Status updated.', 'success'));
                 }
             }
         });
